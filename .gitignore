@@ -1,0 +1,10 @@
+# Build results
+[Dd]eploy/
+[Dd]eploy-plugins/
+.vs/
+/.vs/*
+*.disabled
+
+# NuGet Packages
+*.nupkg
+
