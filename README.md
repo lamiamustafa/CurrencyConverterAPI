@@ -61,6 +61,8 @@ A robust ASP.NET Core Web API for currency conversion, featuring ASP.NET Identit
 
 - **Log Correlation with External API**
   - Helps in debugging downstream call issues.
+  
+- ** distributed tracing using OpenTelemetry
 
 ### ✅ Testing
 
