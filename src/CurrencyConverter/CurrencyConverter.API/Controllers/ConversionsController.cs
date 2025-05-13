@@ -19,6 +19,13 @@ namespace CurrencyConverter.API.Controllers
             _currencyService = currencyService;   
         }
 
+        /// <summary>
+        /// Convert an amount from one currency to another.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="amount"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> ConvertCurrencyAsync(string from, string to, decimal amount)
         {

@@ -27,6 +27,11 @@ namespace CurrencyConverter.Application.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Get latest exchange rates for a given base currency.
+        /// </summary>
+        /// <param name="baseCurrency"></param>
+        /// <returns></returns>
         public async Task<ExchangeRateResponse> GetLatestRates(string baseCurrency)
         {
             var cacheKey = $"{_latestRatesCacheKey}_{baseCurrency}";
@@ -40,6 +45,13 @@ namespace CurrencyConverter.Application.Services
             return result;
         }
 
+        /// <summary>
+        /// Get historical exchange rates for a given base currency and date range.
+        /// </summary>
+        /// <param name="baseCurrency"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public async Task<HistoryExchangeRateResponse> GetHistoricalRatesAsync(string baseCurrency, DateTime start, DateTime end)
         {
             var cacheKey = $"{_historicalRatesCacheKey}_{baseCurrency}_{start:yyyy-MM-dd}_{end:yyyy-MM-dd}";
@@ -52,6 +64,13 @@ namespace CurrencyConverter.Application.Services
             return result;
         }
 
+        /// <summary>
+        /// Convert an amount from one currency to another using the latest exchange rates.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="amount"></param>
+        /// <returns></returns>
         public async Task<decimal> ConvertCurrencyAsync(string from, string to, decimal amount)
         {
             var blockedCurrency = new[] { from, to }
@@ -69,6 +88,11 @@ namespace CurrencyConverter.Application.Services
             return convertedAmount;
         }
 
+        /// <summary>
+        /// Get latest exchange rates from the provider.
+        /// </summary>
+        /// <param name="baseCurrency"></param>
+        /// <returns></returns>
         private async Task<ExchangeRateResponse> GetLatestRatesFromProvider(string baseCurrency)
         {
             var frankfurterProvider = _currencyProvider.CreateCurrencyProvider("Frankfurter");
@@ -76,6 +100,14 @@ namespace CurrencyConverter.Application.Services
             var res = await frankfurterProvider.GetLatestRatesAsync(baseCurrency);
             return res;
         }
+        
+        /// <summary>
+        /// Get historical exchange rates from the provider.
+        /// </summary>
+        /// <param name="baseCurrency"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         private async Task<HistoryExchangeRateResponse> GetHistoricalRatesFromProvider(string baseCurrency, DateTime start, DateTime end)
         {
             var frankfurterProvider = _currencyProvider.CreateCurrencyProvider("Frankfurter");

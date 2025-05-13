@@ -71,7 +71,7 @@ public class Program
             // TODO: restrict trusted proxy IPs
         });
 
-        app.CreateAndMigrateDB();
+        app.CreateAndMigrateDB(builder.Configuration);
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

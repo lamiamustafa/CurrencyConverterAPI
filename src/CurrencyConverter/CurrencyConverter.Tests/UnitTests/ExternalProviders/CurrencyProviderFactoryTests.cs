@@ -27,7 +27,13 @@ namespace CurrencyConverter.Tests.UnitTests.ExternalProviders
         public void CreateCurrencyProvider_WithFrankfurter_ReturnsFrankfurterProvider()
         {
             // Arrange
-            var frankfurterMock = new Mock<FrankfurterProvider>(MockBehavior.Loose, new object[] { null!, null! });
+            var configMock = new Mock<IConfiguration>();
+            configMock.Setup(c => c["ExternalApis:Frankfurter:BaseURL"]).Returns("https://fakeapi.com/");
+            var config = configMock.Object; 
+            var httpMessageHandlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            var httpClient = new HttpClient(httpMessageHandlerMock.Object);
+
+            var frankfurterMock = new Mock<FrankfurterProvider>(MockBehavior.Loose, new object[] { httpClient, null!, config });
 
             _serviceProviderMock
                 .Setup(sp => sp.GetService(typeof(FrankfurterProvider)))

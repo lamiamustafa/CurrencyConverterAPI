@@ -18,10 +18,12 @@ namespace CurrencyConverter.Tests.UnitTests.ExternalProviders
     public class FrankfurterProviderTests
     {
         private readonly Mock<ILogger<ICurrencyProvider>> _loggerMock;
+        private readonly Mock<IConfiguration> _configMock;
 
         public FrankfurterProviderTests()
         {
             _loggerMock = new Mock<ILogger<ICurrencyProvider>>();
+            _configMock = new Mock<IConfiguration>();
         }
 
         private HttpClient CreateMockHttpClient(string expectedJsonResponse, HttpStatusCode statusCode = HttpStatusCode.OK)
@@ -58,7 +60,7 @@ namespace CurrencyConverter.Tests.UnitTests.ExternalProviders
             });
 
             var httpClient = CreateMockHttpClient(json);
-            var provider = new FrankfurterProvider(httpClient, _loggerMock.Object);
+            var provider = new FrankfurterProvider(httpClient, _loggerMock.Object, _configMock.Object);
 
             // Act
             var result = await provider.GetLatestRatesAsync("USD");
@@ -87,7 +89,7 @@ namespace CurrencyConverter.Tests.UnitTests.ExternalProviders
             });
 
             var httpClient = CreateMockHttpClient(json);
-            var provider = new FrankfurterProvider(httpClient, _loggerMock.Object);
+            var provider = new FrankfurterProvider(httpClient, _loggerMock.Object, _configMock.Object);
 
             var startDate = new DateTime(2024, 5, 1);
             var endDate = new DateTime(2024, 5, 3);

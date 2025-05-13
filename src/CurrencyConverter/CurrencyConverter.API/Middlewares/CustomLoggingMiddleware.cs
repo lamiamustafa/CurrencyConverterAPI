@@ -1,6 +1,8 @@
-﻿using Serilog.Context;
+﻿using Azure;
+using Serilog.Context;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using static System.Net.WebRequestMethods;
 
 namespace CurrencyConverter.API.Middlewares
 {
@@ -15,6 +17,11 @@ namespace CurrencyConverter.API.Middlewares
             _logger = logger;
         }
 
+        /// <summary>
+        /// Logs each Request enriched with context including: - Client IP,  - Client ID(from JWT),  - HTTP Method & Endpoint, Response Code & Response Time
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
             var stopwatch = Stopwatch.StartNew();

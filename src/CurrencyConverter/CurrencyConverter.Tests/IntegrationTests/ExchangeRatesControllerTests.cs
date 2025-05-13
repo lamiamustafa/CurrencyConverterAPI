@@ -50,7 +50,7 @@ namespace CurrencyConverter.IntegrationTests
 
             // Act
 
-            var response = await _client.GetAsync("/api/ExchangeRates/latest?baseCurrency=USD");
+            var response = await _client.GetAsync("/api/v1/ExchangeRates/latest?baseCurrency=USD");
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);

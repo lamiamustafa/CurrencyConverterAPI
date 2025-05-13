@@ -11,6 +11,11 @@ namespace CurrencyConverter.API.Middlewares
             _next = next;
         }
 
+        /// <summary>
+        /// Enrich logs with ConnectionId
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
             var correlationId = context.Request.Headers.TryGetValue(CorrelationConstants.Header, out var headerValue)

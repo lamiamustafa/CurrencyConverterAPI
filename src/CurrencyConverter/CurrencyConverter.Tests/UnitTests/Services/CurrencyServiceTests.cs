@@ -2,8 +2,10 @@
 using CurrencyConverter.Application.Interfaces;
 using CurrencyConverter.Application.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,13 +19,15 @@ namespace CurrencyConverter.Tests.UnitTests.Services
         private readonly Mock<ICurrencyProvider> _providerMock;
         private readonly Mock<IMemoryCache> _memoryCacheMock;
         private readonly CurrencyService _currencyService;
+        private readonly Mock<ILogger<CurrencyService>> _loggerMock;
 
         public CurrencyServiceTests()
         {
             _providerFactoryMock = new Mock<ICurrencyProviderFactory>();
             _providerMock = new Mock<ICurrencyProvider>();
             _memoryCacheMock = new Mock<IMemoryCache>();
-            _currencyService = new CurrencyService(_providerFactoryMock.Object, _memoryCacheMock.Object);
+            _loggerMock = new Mock<ILogger<CurrencyService>>();
+            _currencyService = new CurrencyService(_providerFactoryMock.Object, _memoryCacheMock.Object, _loggerMock.Object);
         }
 
         [Fact]
@@ -191,10 +195,13 @@ namespace CurrencyConverter.Tests.UnitTests.Services
         [Theory]
         [InlineData("TRY", "USD", 100)]
         [InlineData("USD", "TRY", 100)]
-        public async Task ConvertCurrencyAsync_ThrowsException_ForBlockedCurrency(string from, string to, decimal amount)
+        public async Task ConvertCurrencyAsync_ReturnsNegOne_ForBlockedCurrency(string from, string to, decimal amount)
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _currencyService.ConvertCurrencyAsync(from, to, amount));
+            // Act
+            var result = await _currencyService.ConvertCurrencyAsync(from, to, amount);
+            
+            //Assert
+            Assert.Equal(-1, result);
         }
 
         [Fact]

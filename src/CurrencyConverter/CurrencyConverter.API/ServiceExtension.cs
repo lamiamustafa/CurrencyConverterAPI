@@ -24,6 +24,7 @@ using CurrencyConverter.API.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using CurrencyConverter.API.Models;
 
 namespace CurrencyConverter.API
 {
@@ -41,13 +42,17 @@ namespace CurrencyConverter.API
             services.AddSingleton<ICurrencyProviderFactory, CurrencyProviderFactory>();
             services.AddSingleton<ICurrencyService, CurrencyService>();
             services.AddTransient<FrankfurterProvider>();
-            services.AddHttpClient<FrankfurterProvider>(client =>
-            {
-                client.BaseAddress = new Uri(config["ExternalApis:Frankfurter:BaseURL"]);
-            });
+            services.AddHttpClient<FrankfurterProvider>();
             return services;
         }
 
+        /// <summary>
+        /// Registers DB Context as service
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
             string? connString = configuration.GetConnectionString("DefaultConnection");
@@ -88,17 +93,28 @@ namespace CurrencyConverter.API
             return host;
         }
 
-        public static async Task<WebApplication> CreateAndMigrateDB(this WebApplication webApplication)
+        /// <summary>
+        /// Create DB and run Database migrations, Seeds initial user into the database
+        /// </summary>
+        /// <param name="webApplication"></param>
+        /// <returns></returns>
+        public static async Task<WebApplication> CreateAndMigrateDB(this WebApplication webApplication, IConfiguration config)
         {
             using (var scope = webApplication.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 db.Database.Migrate();
-                await UsersSeed.SeedAsync(scope.ServiceProvider);
+                await UsersSeed.SeedAsync(scope.ServiceProvider, config);
             }
             return webApplication;
         }
 
+        /// <summary>
+        /// Registers ASP.NET Identity, JWT Authentications
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
         public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration config)
         {
             services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -129,6 +145,11 @@ namespace CurrencyConverter.API
             return services;
         }
 
+        /// <summary>
+        /// Registers and configures Swagger/OpenAPI support for the API, including setting up the API documentation, defining a JWT Bearer authentication scheme, and applying a global security requirement so all endpoints require a valid JWT token.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection AddSwaggerSupport(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
@@ -164,9 +185,14 @@ namespace CurrencyConverter.API
             return services;
         }
 
+        /// <summary>
+        /// Registers external API clients with resilience policies using HttpClientFactory.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
         public static IServiceCollection AddExternalApiClient(this IServiceCollection services, IConfiguration config)
         {
-
             var externalApisSection = config.GetSection("ExternalApis");
 
             foreach (var api in externalApisSection.GetChildren())
@@ -196,7 +222,12 @@ namespace CurrencyConverter.API
 
             return services;
         }
-    
+
+        /// <summary>
+        /// Registers rate limiting services and policies for the API.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection AddRateLimiter(this IServiceCollection services)
         {
             /// <summary>
@@ -235,6 +266,11 @@ namespace CurrencyConverter.API
             return services;
         }
 
+        /// <summary>
+        /// Configures API versioning for the application, allowing for multiple versions of the API to be supported and specifying how the version is read from requests.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection AddApiVersioning(this IServiceCollection services)
         {
             services.AddApiVersioning(options =>

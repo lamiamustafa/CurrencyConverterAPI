@@ -23,6 +23,12 @@ namespace CurrencyConverter.Infrastructure
             _logger = logger;
         }
 
+        /// <summary>
+        /// Creates a currency provider based on the specified provider name.
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public ICurrencyProvider CreateCurrencyProvider(string provider)
         {
             switch (provider.ToLower())

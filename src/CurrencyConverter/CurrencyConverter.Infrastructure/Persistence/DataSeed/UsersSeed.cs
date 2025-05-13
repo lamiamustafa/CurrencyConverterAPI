@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CurrencyConverter.API.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -12,7 +14,8 @@ namespace CurrencyConverter.Infrastructure.Persistence.SeedData
     [ExcludeFromCodeCoverage]
     public class UsersSeed
     {
-        public static async Task SeedAsync(IServiceProvider serviceProvider)
+
+        public static async Task SeedAsync(IServiceProvider serviceProvider, IConfiguration config)
         {
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -26,30 +29,44 @@ namespace CurrencyConverter.Infrastructure.Persistence.SeedData
                     await roleManager.CreateAsync(new IdentityRole(role));
             }
 
-            // Seed admin user
-            var adminEmail = "admin@example.com";
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
-            if (adminUser == null)
-            {
-                var user = new IdentityUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
+            // Seed admin users
+            var adminUsers = new List<User>();
+            var adminsSection = config.GetSection("Roles:Admin");
 
-                var result = await userManager.CreateAsync(user, "Admin123!"); // Strong password!
-                if (result.Succeeded)
+            foreach (var admin in adminsSection.GetChildren())
+            {
+                adminUsers.Add(new User
                 {
-                    await userManager.AddToRoleAsync(user, "Admin");
-                }
-                else
+                    Email = admin.GetValue<string>("Email"),
+                    Password = admin.GetValue<string>("Password")
+                });
+            }
+            foreach (var admin in adminUsers)
+            {
+                var adminUser = await userManager.FindByEmailAsync(admin.Email);
+                if (adminUser == null)
                 {
-                    // Log or throw error
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new Exception("Failed to create seed user: " + errors);
+                    var user = new IdentityUser
+                    {
+                        Email = admin.Email,
+                        UserName = admin.Email,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(user, admin.Password); // Strong password!
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(user, "Admin");
+                    }
+                    else
+                    {
+                        // Log or throw error
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        throw new Exception("Failed to create seed user: " + errors);
+                    }
                 }
             }
+
         }
     }
 }
